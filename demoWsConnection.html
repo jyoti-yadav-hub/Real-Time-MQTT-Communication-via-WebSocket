@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript MQTT WebSocket demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+    <script src="https://unpkg.com/paho-mqtt@1.0.4/paho-mqtt.js"></script>
+
+  </head>
+  <style>
+    .error {
+      color: red;
+      font-weight: bolder;
+    }
+  </style>
+  <body>
+    <div id="connect"></div>
+    <div id="error"></div>
+
+    <script>
+      const hostURL = "ws://localhost:1009/mqqt";
+      //const hostURL = "wss://public.mqtthq.com:8083/mqtt"; //INVALID PATH
+      const clientId = "client/" + new Date().getTime();
+      const topic = "wssTest/#";
+
+      let mqtt;
+
+      // Initialize the MQTT client
+      mqtt = new Paho.MQTT.Client(hostURL, clientId);
+
+      // Set callback handlers
+      mqtt.onConnectionLost = onConnectionLost;
+      mqtt.onMessageArrived = onMessageArrived;
+
+      // Connect the client
+      mqtt.connect({
+        onSuccess: onConnect,
+        onFailure: onFailure,
+        keepAliveInterval: 30,
+        reconnect: true, // Enable automatic reconnect
+        cleanSession: true,
+        // useSSL: true,
+        userName: "jyoti",
+        password: "Jyoti@223133",
+      });
+
+      // Connection successful callback
+      function onConnect() {
+        console.log("Connected");
+        // Subscribe to a topic
+        mqtt.subscribe(topic);
+        document.getElementById(
+          "connect"
+        ).innerText = `WebSocket connection (ws) to the broker host at ${hostURL} is connected`;
+      }
+
+      // Connection lost callback
+      function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log("Connection lost: " + responseObject.errorMessage);
+        }
+      }
+
+      // Message arrived callback
+      function onMessageArrived(message) {
+        console.log(
+          "Message arrived on topic '" +
+            message.destinationName +
+            "': " +
+            message.payloadString
+        );
+      }
+
+      // Callback for connection failure
+      function onFailure(responseObject) {
+        console.error("Connection failed:", responseObject.errorMessage);
+        document.getElementById(
+          "error"
+        ).innerText = `Connection failed. SSL/TLS certificate may be invalid or untrusted.==>ERROR -- ${responseObject.errorMessage}`;
+      }
+    </script>
+  </body>
+</html>

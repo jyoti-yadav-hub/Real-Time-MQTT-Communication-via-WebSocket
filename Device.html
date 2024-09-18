@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript MQTT WebSocket Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
+    <style>
+      .mainDiv{
+        border: 1px solid black; /* Add a black border around each mainDiv */
+        padding: 10px;    
+        margin-bottom: 10px; 
+        display: flow-root;        
+        width: 250px;
+      }
+      .invisible {
+display: none;
+visibility: hidden;
+   }
+    </style>
+  </head>
+  <body>
+    <script>  
+      const host = "public.mqtthq.com"; // Change this to your MQTT broker host
+      const port = 8083;
+      const clientId = "client/" + new Date().getTime();
+
+      let mqtt;    
+      mqtt = new Paho.MQTT.Client(host, port, clientId);
+      mqtt.connect({
+        cleanSession: true,
+        invocationContext: { clientId: clientId },
+        onSuccess: onConnect,
+        onFailure: onFailure,
+      });
+      // Function to send a message to the Node.js server
+      function sendMessage() {
+        try{
+        const messageInput = document.getElementById("text");
+        const email = document.getElementById("email");
+        const message = messageInput.value +'/'+ email.value;
+        if (message.trim() === "") {
+          console.log("🚀 ~ file: Device.html:44 ~ sendMessage ~ Message is empty. Please enter a message:")
+          return;
+        }
+        const mqttMessage = new Paho.MQTT.Message(message);
+        mqttMessage.destinationName = 'demo';
+        mqtt.send(mqttMessage);
+        // Clear the input field after sending the message
+        messageInput.value = "";
+        document.getElementById("email").value = ''
+        alert(`Message successfully sent with client:- ${clientId}`);
+      }catch(error){
+        alert(`file: Device.html:56 ~ sendMessage ~ error:- ${error}`);
+      }
+      }
+
+      function sendResidentalMessage() {
+        try{
+        const message = document.getElementById("r_id").value +'/'+ document.getElementById("add").value;
+        
+        if (message.trim() === "") {
+          console.warn("🚀 ~ file: Device.html:64 ~ sendResidentalMessage ~ Message is empty. Please enter a message.:")
+          return;
+        }
+        const mqttMessage = new Paho.MQTT.Message(message);
+        mqttMessage.destinationName = 'demo/resident';
+        mqtt.send(mqttMessage);
+        document.getElementById("r_id").value = "";
+        document.getElementById("add").value = ''
+      }catch(error){       
+        console.error("🚀 ~ file: Device.html:72 ~ sendResidentalMessage ~ error:", error)
+      }
+      }
+
+      function sendEmloyeerMessage(){
+        try{
+        const message = document.getElementById("e_id").value +'/'+ document.getElementById("designation").value;
+        if (message.trim() === "") {
+          console.warn("🚀 ~ file: Device.html:81 ~ sendEmloyeerMessage ~ Message is empty. Please enter a message:")
+          return;
+        }
+        const mqttMessage = new Paho.MQTT.Message(message);
+        mqttMessage.destinationName = 'demo/emloyeer';
+        mqtt.send(mqttMessage);
+        document.getElementById("designation").value = "";
+        document.getElementById("e_id").value = ''
+      }catch(error){
+        console.error("🚀 ~ file: Device.html:93 ~ sendEmloyeerMessage ~ error:", error)        
+      }
+      }
+
+      function onConnect() {
+        mqtt.subscribe('demo/#');
+        document.getElementById("topic").innerText =  `Subscribed to channel`;
+      }
+
+      function onFailure(error) {
+        console.error("Connection error:", error);
+      }
+    </script>
+<div style="display: flex;padding: 8%;">
+    <div class="mainDiv">
+      <strong>Personal Detail</strong>
+      <div>
+        <label for="text" style="display: block;">Name:</label>
+        <input id="text"></input>
+        <br/>
+        <label for="text" style="display: block;">Email:</label>
+        <input id="email"></input>
+        <br/>
+        <div id="topic"></div>
+      </div>
+      <div>
+        <br/><br/>
+        <button onclick="sendMessage()">Publish Message</button>
+
+      </div>
+    </div>
+    <div class="mainDiv">
+      <strong>Residental Detail</strong>
+      <div>
+        <label for="r_id" style="display: block;">Id:</label>
+        <input id="r_id"></input>
+        <br/>
+        <label for="add" style="display: block;">Address:</label>
+        <input id="add"></input>
+        <br/>
+        <div id="residental-topic"></div>
+      </div>
+      <div>
+        <br/><br/>
+        <button onclick="sendResidentalMessage()">Publish Message</button>
+
+      </div>
+    </div>
+    <div class="mainDiv">
+      <strong>Emloyeer Detail</strong>
+      <div>
+
+        <label for="e_id" style="display: block;">Id:</label>
+        <input id="e_id"></input>
+        <br/>
+        <label for="designation" style="display: block;">designation:</label>
+        <input id="designation"></input>
+        <br/>
+        <div id="emp-topic"></div>
+      </div>
+      <div>
+        <br/><br/>
+        <button onclick="sendEmloyeerMessage()">Publish Message</button>
+
+      </div>
+    </div>
+  </div>
+  </body>
+</html>
